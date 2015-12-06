@@ -13,7 +13,7 @@ def create_database():
      db.create_all()
      db.session.commit()
 
-##load all config files
+# load all config files
 app.config.from_pyfile('config.py')
 api.add_resource(Location, '/api/location')
 
