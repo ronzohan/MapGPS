@@ -19,7 +19,15 @@ class Location(Resource):
         return {"message": "Success"}
 
     def get(self):
-        users = User.query.all()
+        parser = reqparse.RequestParser()
+        parser.add_argument('limit', required=False)
+
+        args = parser.parse_args()
+
+        if (args['limit'] is not None):
+            users = db.session.query(User).limit(args['limit']).order_by(User.upload_time.asc())
+        else:
+            users = db.session.query(User).order_by(User.upload_time.desc()).all()
 
         user_locations = []
 
