@@ -1,5 +1,6 @@
 import datetime
 from flask_restful import Resource, reqparse
+from helper.date_helper import convert_to_date
 from models.shared_model import db
 from models.user import User
 
@@ -28,12 +29,18 @@ class Location(Resource):
 
         args = parser.parse_args()
 
+        # validate date input
+        args['filter_start_date'] = convert_to_date(args['filter_start_date'])
+        args['filter_end_date'] = convert_to_date(args['filter_end_date'])
+
+        if args['filter_start_date'] is None or args['filter_end_date'] is None:
+            return {"message": "Failed to parse date", "status": 400}
+
         # if start date and end date are the same, add one day to the end date to
         # have the query date >= TODAY and date <= TOMORROW to get all the queries
         # of from time of 00:00:00 up to 23:59:59
         if args['filter_start_date'] == args['filter_end_date']:
-            args['filter_end_date'] = datetime.datetime.strptime(args['filter_end_date'], "%Y-%m-%d") \
-                                      + datetime.timedelta(days=1)
+            args['filter_end_date'] += datetime.timedelta(days=1)
 
         # This will check what will be the ordering of the returned location info
         if args['upload_time_order'] == "asc":
@@ -60,4 +67,4 @@ class Location(Resource):
                 "upload_time": str(user.upload_time)
             })
 
-        return {"message": "Success", "locations": user_locations}
+        return {"message": "Success", "locations": user_locations, "status": 200}
