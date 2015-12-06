@@ -4,6 +4,9 @@ from models.user import User
 
 
 class Location(Resource):
+    def dispatch_request(self):
+        pass
+
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('longitude', required=True)
@@ -21,22 +24,30 @@ class Location(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('limit', required=False)
+        parser.add_argument('upload_time_order', required=False, default="asc")
 
         args = parser.parse_args()
 
-        if (args['limit'] is not None):
-            users = db.session.query(User).limit(args['limit']).order_by(User.upload_time.asc())
+        # This will check what will be the ordering of the returned location info
+        if args['upload_time_order'] == "asc":
+            upload_time_order = User.upload_time.asc()
+        elif args['upload_time_order'] == "desc":
+            upload_time_order = User.upload_time.desc()
         else:
-            users = db.session.query(User).order_by(User.upload_time.desc()).all()
+            upload_time_order = User.upload_time.asc()
+
+        if args['limit'] is not None:
+            users = db.session.query(User).limit(args['limit']).order_by(upload_time_order)
+        else:
+            users = db.session.query(User).order_by(User.upload_time.desc(upload_time_order)).all()
 
         user_locations = []
 
         for user in users:
             user_locations.append({
-                "latitude":user.latitude,
-                "longitude":user.longitude,
-                "upload_time":str(user.upload_time)
+                "latitude": user.latitude,
+                "longitude": user.longitude,
+                "upload_time": str(user.upload_time)
             })
 
-
-        return {"message": user_locations}
+        return {"locations": user_locations}
