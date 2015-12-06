@@ -5,6 +5,7 @@ from models.shared_model import db
 from models.user import User
 
 
+# noinspection PyMethodMayBeStatic
 class Location(Resource):
     def post(self):
         parser = reqparse.RequestParser()
