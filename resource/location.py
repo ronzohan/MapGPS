@@ -34,6 +34,7 @@ class Location(Resource):
         args['filter_start_date'] = convert_to_date(args['filter_start_date'])
         args['filter_end_date'] = convert_to_date(args['filter_end_date'])
 
+        # return error here because parsing of date failed
         if args['filter_start_date'] is None or args['filter_end_date'] is None:
             return {"message": "Failed to parse date", "status": 400}
 
@@ -56,7 +57,7 @@ class Location(Resource):
                 .filter(User.upload_time.between(args['filter_start_date'], args['filter_end_date'])) \
                 .order_by(upload_time_order).limit(args['limit'])
         else:
-            users = db.session.query(User).order_by(upload_time_order).all() \
+            users = db.session.query(User).order_by(upload_time_order)\
                 .filter(User.upload_time.between(args['filter_start_date'], args['filter_end_date']))
 
         user_locations = []
