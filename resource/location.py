@@ -1,5 +1,6 @@
 import datetime
 from flask_restful import Resource, reqparse
+from pubnub import Pubnub
 from helper.date_helper import convert_to_date
 from models.shared_model import db
 from models.user import User
@@ -18,6 +19,17 @@ class Location(Resource):
         user = User(args['longitude'], args['latitude'], args['upload_time'])
         db.session.add(user)
         db.session.commit()
+
+        pubnub = Pubnub(
+            publish_key="pub-c-d15beef1-3112-44a9-9bf2-7995a8311b1d",
+            subscribe_key="sub-c-4449a38e-9ce9-11e5-8db0-0619f8945a4f"
+        )
+
+        pubnub.publish(
+            'Channel-n6vdjcnlr',
+            '{"message": "Got new update"}', callback=self.callback, error=self.callback
+        )
+
 
         return {"message": "Success"}
 
@@ -70,3 +82,6 @@ class Location(Resource):
             })
 
         return {"message": "Success", "locations": user_locations, "status": 200}
+
+    def callback(message, channel):
+        print(message)
